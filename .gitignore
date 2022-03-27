@@ -1,0 +1,9 @@
+Hardware/Generated/
+Hardware/project/
+Hardware/target/
+Hardware/.bsp
+Hardware/.bloop
+Hardware/.metals
+Hardware/.vscode
+Hardware/test_run_dir/
+Test-Programs/*.bin
