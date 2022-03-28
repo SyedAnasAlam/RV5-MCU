@@ -7,3 +7,4 @@ Hardware/.metals
 Hardware/.vscode
 Hardware/test_run_dir/
 Test-Programs/*.bin
+BasysTest/

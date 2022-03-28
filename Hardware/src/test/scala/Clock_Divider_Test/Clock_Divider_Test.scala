@@ -6,10 +6,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class Clock_Divider_Test extends AnyFlatSpec with ChiselScalatestTester {
     "Clock Divider" should "pass" in {
-        test(new Clock_Divider(20, 1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new Clock_Divider(2)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
         
             var i = 0
-            for(i <- 0 until 100) {
+            for(i <- 0 until 99) {
                 dut.clock.step()
             }
 
