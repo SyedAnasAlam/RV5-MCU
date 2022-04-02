@@ -30,7 +30,7 @@ class FlashControllerTestFSM(count: Int) extends Module {
     val address = RegInit(0.U(24.W))
     val stepSync = RegNext(RegNext(io.step))
 
-    io.readData := dataBuffer(31, 23)
+    io.readData := dataBuffer(31, 16)
 
     val idle :: intA :: read :: Nil = Enum(3)
     val state = RegInit(idle)

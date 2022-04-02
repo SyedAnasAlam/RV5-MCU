@@ -83,7 +83,7 @@ class FlashController(count: Int) extends Module {
             }         
         }
         is(receiveData) {
-            when(sck && counter === max) {
+            when(~sck && counter === max) {
                 index := index + 1.U
                 dataBuffer := Cat(dataBuffer, io.miso.asUInt)    
 
