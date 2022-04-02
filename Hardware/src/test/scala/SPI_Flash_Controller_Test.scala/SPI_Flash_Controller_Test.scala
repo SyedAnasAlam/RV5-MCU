@@ -7,22 +7,25 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class SPI_Flash_Controller_Test extends AnyFlatSpec with ChiselScalatestTester {
     "Waveform" should "pass" in {
-        test(new SPI_Flash_Controller(8)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new SPI_Flash_Controller(2)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
 
-            dut.io.addr.poke(0.U)
-            dut.io.read_enable.poke(false.B)
-            dut.io.miso.poke(false.B)
+            for(i <- 0 until 200) {
+                dut.clock.step()
+            }
 
-            dut.clock.step()
-            dut.clock.step()
-
-            dut.io.addr.poke(0.U)
+            dut.io.branch.poke(false.B)
+            dut.io.address.poke(1.U)
             dut.io.read_enable.poke(true.B)
             dut.io.miso.poke(false.B)
 
-            for(i <- 0 until 800) {
+            for(i <- 0 until 200) {
                 dut.clock.step()
             }
+
+            /*dut.io.address.poke(1.U)
+            dut.io.read_enable.poke(true.B)
+            dut.io.miso.poke(false.B)*/
+
             
             /*while(dut.io.debug_transmit_complete.peek().litValue() == 0) {
                 dut.clock.step()
