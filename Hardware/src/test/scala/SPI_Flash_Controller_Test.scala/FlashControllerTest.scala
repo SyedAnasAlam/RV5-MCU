@@ -1,13 +1,13 @@
-import Memory_Controller.SPI_Flash_Controller
+import MemoryController.FlashController
 
 import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
 
-class SPI_Flash_Controller_Test extends AnyFlatSpec with ChiselScalatestTester {
+class FlashControllerTest extends AnyFlatSpec with ChiselScalatestTester {
     "Waveform" should "pass" in {
-        test(new SPI_Flash_Controller(2)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new FlashController(2)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
 
             for(i <- 0 until 200) {
                 dut.clock.step()

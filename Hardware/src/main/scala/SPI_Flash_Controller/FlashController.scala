@@ -1,19 +1,23 @@
-package Memory_Controller
+package MemoryController
 
 import chisel3._
 import chisel3.util._
-import Memory_Controller.SPI_Flash_Commands._
-import Utility.Delay
+import MemoryController.FlashCommands._
 
-class SPI_Flash_Controller(count: Int) extends Module {
+object FlashCommands {
+    val READ_CMD = "h03".U(8.W)
+    val RELEASE_POWER_DOWN_CMD = "hAB".U(8.W)
+}
+
+class FlashController(count: Int) extends Module {
     require(count > 0, "count must be greater than 0")
 
     val io = IO(new Bundle {
-        val read_enable = Input(Bool())
+        val readEnable = Input(Bool())
         val branch = Input(Bool())
         val address = Input(UInt(24.W))
-        val data_valid = Output(Bool())
-        val read_data = Output(UInt(32.W))
+        val dataValid = Output(Bool())
+        val readData = Output(UInt(32.W))
 
         val cs = Output(Bool())
         val mosi = Output(Bool())
@@ -26,17 +30,16 @@ class SPI_Flash_Controller(count: Int) extends Module {
     val sck = RegInit(true.B)
     val mosi = RegInit(false.B)
     val cs = RegInit(true.B)
-    val data_reg = RegInit(0.U(32.W))
+    val dataBuffer = RegInit(0.U(32.W))
     
-    val power_up :: idle :: transmit_cmd :: transmit_address :: receive_data :: Nil = Enum(5)
-    val state = RegInit(power_up)
+    val powerUp :: idle :: transmitCMD :: transmitAddress :: receiveData :: Nil = Enum(5)
+    val state = RegInit(powerUp)
 
     io.cs := cs
     io.mosi := mosi
     io.sck := sck   
-    io.read_data := data_reg 
-    io.data_valid := false.B
-    io.read_data := 0.U
+    io.readData := dataBuffer 
+    io.dataValid := false.B
 
     val max = (count - 1).U
     counter := counter + 1.U
@@ -46,7 +49,7 @@ class SPI_Flash_Controller(count: Int) extends Module {
     }
 
     switch(state) {
-        is{power_up} {  
+        is{powerUp} {  
             when(spiTransmit(data = RELEASE_POWER_DOWN_CMD, length = 8.U)) {
                 cs := true.B
                 state := idle
@@ -54,37 +57,37 @@ class SPI_Flash_Controller(count: Int) extends Module {
         }
         is(idle) {
             when(sck && counter === max) {
-                io.data_valid := false.B
-                io.read_data := data_reg
+                io.dataValid := false.B
+                io.readData := dataBuffer
 
                 mosi := false.B
                 sck := true.B
                 index := 0.U
 
-                when(io.read_enable) {
-                    data_reg := 0.U
-                    state := transmit_cmd
+                when(io.readEnable) {
+                    dataBuffer := 0.U
+                    state := transmitCMD
                 }
             }
         }
-        is(transmit_cmd) {
+        is(transmitCMD) {
             when(spiTransmit(data = READ_CMD, length = 8.U)) {
                 cs := true.B
-                state := transmit_address
+                state := transmitAddress
             }
         }
-        is(transmit_address) {
+        is(transmitAddress) {
             when(spiTransmit(data = io.address, length = 24.U)) {
-                state := receive_data
+                state := receiveData
             }         
         }
-        is(receive_data) {
+        is(receiveData) {
             when(~sck && counter === max) {
                 index := index + 1.U
-                data_reg := Cat(data_reg, io.miso.asUInt)    
+                dataBuffer := Cat(dataBuffer, io.miso.asUInt)    
 
                 when(index === 32.U) {
-                    io.data_valid := true.B
+                    io.dataValid := true.B
                     when(io.branch) {
                         index := 0.U
                     }
@@ -112,6 +115,6 @@ class SPI_Flash_Controller(count: Int) extends Module {
 
 }
 
-object SPI_Flash_Controller extends App {
-    emitVerilog(new SPI_Flash_Controller(count = 2), Array("--target-dir", "Generated"))
+object FlashController extends App {
+    emitVerilog(new FlashController(count = 2), Array("--target-dir", "Generated"))
 }
