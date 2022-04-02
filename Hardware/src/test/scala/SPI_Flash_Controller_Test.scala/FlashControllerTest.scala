@@ -1,4 +1,4 @@
-import MemoryController.FlashController
+/*import MemoryController.FlashController
 
 import chisel3._
 import chiseltest._
@@ -43,4 +43,4 @@ class FlashControllerTest extends AnyFlatSpec with ChiselScalatestTester {
             }*/
         }
     }
-}
+}*/

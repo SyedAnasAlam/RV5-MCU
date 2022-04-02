@@ -72,17 +72,18 @@ class FlashController(count: Int) extends Module {
         }
         is(transmitCMD) {
             when(spiTransmit(data = READ_CMD, length = 8.U)) {
-                cs := true.B
+                sck := true.B
                 state := transmitAddress
             }
         }
         is(transmitAddress) {
             when(spiTransmit(data = io.address, length = 24.U)) {
+                sck := true.B
                 state := receiveData
             }         
         }
         is(receiveData) {
-            when(~sck && counter === max) {
+            when(sck && counter === max) {
                 index := index + 1.U
                 dataBuffer := Cat(dataBuffer, io.miso.asUInt)    
 
@@ -92,6 +93,7 @@ class FlashController(count: Int) extends Module {
                         index := 0.U
                     }
                     . otherwise {
+                        cs := true.B
                         state := idle
                     }
                 }        
