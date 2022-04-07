@@ -14,6 +14,8 @@ class FlashControllerTestFSM(count: Int) extends Module {
         val mosi = Output(Bool())
         val miso = Input(Bool())
         val sck = Output(Bool())
+
+        val debug_dataValid = Output(Bool())
     })
 
     val FlashController = Module(new FlashController(count))
@@ -30,13 +32,13 @@ class FlashControllerTestFSM(count: Int) extends Module {
     val address = RegInit(0.U(24.W))
     val stepSync = RegNext(RegNext(io.step))
 
-    io.readData := dataBuffer(31, 16)
+    io.readData := Cat(dataBuffer(31, 24), dataBuffer(7, 0))
 
     val idle :: intA :: read :: Nil = Enum(3)
     val state = RegInit(idle)
     
     val risingEdge = RegInit(false.B)
-
+    
     switch(state) {
         is(idle) {
             FlashController.io.readEnable := false.B
@@ -59,6 +61,7 @@ class FlashControllerTestFSM(count: Int) extends Module {
             }
         }
     }
+    io.debug_dataValid := FlashController.io.dataValid
 }
 
 object FlashControllerTestFSM extends App {

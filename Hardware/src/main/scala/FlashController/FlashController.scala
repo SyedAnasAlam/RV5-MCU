@@ -4,6 +4,13 @@ import chisel3._
 import chisel3.util._
 import MemoryController.FlashCommands._
 
+/**
+ * SCK is high when idle
+ * Controller shifts out data on falling edge of SCK such that data is valid on rising edge of SCK
+ * Controller samples data from flash on rising edge of SCK
+*/
+
+
 object FlashCommands {
     val READ_CMD = "h03".U(8.W)
     val RELEASE_POWER_DOWN_CMD = "hAB".U(8.W)
@@ -31,6 +38,7 @@ class FlashController(count: Int) extends Module {
     val mosi = RegInit(false.B)
     val cs = RegInit(true.B)
     val dataBuffer = RegInit(0.U(32.W))
+    val dataValid = RegInit(false.B)
     
     val powerUp :: idle :: transmitCMD :: transmitAddress :: receiveData :: Nil = Enum(5)
     val state = RegInit(powerUp)
@@ -39,7 +47,7 @@ class FlashController(count: Int) extends Module {
     io.mosi := mosi
     io.sck := sck   
     io.readData := dataBuffer 
-    io.dataValid := false.B
+    io.dataValid := dataValid
 
     val max = (count - 1).U
     counter := counter + 1.U
@@ -56,12 +64,13 @@ class FlashController(count: Int) extends Module {
             }
         }
         is(idle) {
+            io.readData := dataBuffer
             when(sck && counter === max) {
-                io.dataValid := false.B
-                io.readData := dataBuffer
+                dataValid := false.B
 
                 mosi := false.B
                 sck := true.B
+                cs := true.B
                 index := 0.U
 
                 when(io.readEnable) {
@@ -78,7 +87,6 @@ class FlashController(count: Int) extends Module {
         }
         is(transmitAddress) {
             when(spiTransmit(data = io.address, length = 24.U)) {
-                sck := true.B
                 state := receiveData
             }         
         }
@@ -87,13 +95,12 @@ class FlashController(count: Int) extends Module {
                 index := index + 1.U
                 dataBuffer := Cat(dataBuffer, io.miso.asUInt)    
 
-                when(index === 32.U) {
-                    io.dataValid := true.B
+                when(index === 31.U) {
+                    dataValid:= true.B
                     when(io.branch) {
                         index := 0.U
                     }
                     . otherwise {
-                        cs := true.B
                         state := idle
                     }
                 }        
@@ -118,5 +125,5 @@ class FlashController(count: Int) extends Module {
 }
 
 object FlashController extends App {
-    emitVerilog(new FlashController(count = 2), Array("--target-dir", "Generated"))
+    emitVerilog(new FlashController(count = 8), Array("--target-dir", "Generated"))
 }
