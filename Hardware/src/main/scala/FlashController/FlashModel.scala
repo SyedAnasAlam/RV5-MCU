@@ -12,13 +12,13 @@ class FlashModel(count: Int, app: String) extends Module {
         val miso = Output(Bool())
         val sck = Input(Bool())
 
-        val debug_counter = Output(UInt((log2Ceil(count + 1).W)))
+/*         val debug_counter = Output(UInt((log2Ceil(count + 1).W)))
         val debug_state = Output(UInt(2.W))
         val debug_index = Output(UInt(24.W))
         val debug_command = Output(UInt(8.W))
         val debug_address = Output(UInt(24.W))
         val debug_subState = Output(UInt(2.W))
-        val debug_data = Output(UInt(32.W))
+        val debug_data = Output(UInt(32.W)) */
     })
     
     val program = Files.readAllBytes(Paths.get(app))    
@@ -95,11 +95,11 @@ class FlashModel(count: Int, app: String) extends Module {
             }
         }
     }
-    io.debug_command := command
+/*     io.debug_command := command
     io.debug_counter := counter
     io.debug_index := index
     io.debug_state := state.asUInt
     io.debug_address := address
     io.debug_subState := subState
-    io.debug_data := data.asUInt
+    io.debug_data := data.asUInt */
 }

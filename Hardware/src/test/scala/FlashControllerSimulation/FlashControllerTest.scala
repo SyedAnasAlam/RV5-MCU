@@ -7,8 +7,13 @@ import MemoryController._
 class FlashControllerTest extends AnyFlatSpec with ChiselScalatestTester {
     "Flash Controller" should "pass" in {
         test(new FlashSimulation(count = 2, app = "../../Documents/ftdiflash-master/file.bin")).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-            
-
+            dut.io.readEnable.poke(true.B)
+            dut.clock.step()
+            dut.io.readEnable.poke(false.B)
+            var i = 0
+            for(i <- 0 until 300) {
+                dut.clock.step()
+            }
         }
     }
 }
