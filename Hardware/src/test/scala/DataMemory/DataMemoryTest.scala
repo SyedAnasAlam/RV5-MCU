@@ -107,7 +107,7 @@ class DataMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
             dut.io.readEnable.poke(false.B)
             dut.io.writeEnable.poke(true.B)
             dut.io.address.poke(0.U)
-            dut.io.writeData.poke(0x55AA55AA.S)
+            dut.io.writeData.poke(0xAA55AA55.S)
             dut.io.funct3.poke(0x02.U)
             dut.clock.step()
 
@@ -135,6 +135,13 @@ class DataMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
             dut.io.readEnable.poke(true.B)
             dut.io.writeEnable.poke(false.B)
             dut.io.address.poke(3.U)
+            dut.io.funct3.poke(0x04.U)
+            dut.clock.step()
+            println(dut.io.readData.peek().litValue().toInt.toHexString)
+
+            dut.io.readEnable.poke(true.B)
+            dut.io.writeEnable.poke(false.B)
+            dut.io.address.poke(4.U)
             dut.io.funct3.poke(0x04.U)
             dut.clock.step()
             println(dut.io.readData.peek().litValue().toInt.toHexString)

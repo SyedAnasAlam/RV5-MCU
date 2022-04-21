@@ -32,12 +32,14 @@ class DataMemory extends Module {
     readWord(3) := 0.S
 
     io.readData := 0.S
+
+    val addr1 = io.address >> 2.U
+    val addr2 = addr1 + 1.U
     when(io.readEnable) {
-        val addr1 = io.address >> 2.U
-        val addr2 = addr1 + 1.U
         readData := mem.read(addr1)
         readData2 := mem.read(addr2)
-        switch(io.address(1, 0)) {
+        val byteSel = io.address(1, 0)
+        switch(byteSel) {
           is(0.U) {
               readWord := readData
           }
@@ -92,7 +94,7 @@ class DataMemory extends Module {
     }
 
     when(io.writeEnable) {
-        mem.write(io.address >> 2, element, mask.asBools)
+        mem.write(addr1, element, mask.asBools)
     }
 }
 
