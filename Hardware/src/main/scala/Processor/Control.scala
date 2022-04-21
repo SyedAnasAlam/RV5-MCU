@@ -20,7 +20,7 @@ class Control() extends Module {
     io.aluOp    := DontCare
     io.aluSrc1  := false.B
     io.aluSrc2  := false.B
-    io.pcSrc    := eNEXTPC
+    io.pcSrc    := ePC_4
     io.regSrc   := DontCare
     io.memRead  := false.B
     io.memWrite := false.B
@@ -36,7 +36,7 @@ class Control() extends Module {
         io.aluOp    := eARITHMETIC
         io.aluSrc1  := false.B
         io.aluSrc2  := ~io.opcode(5)
-        io.pcSrc    := eNEXTPC
+        io.pcSrc    := ePC_4
         io.regSrc   := eALU
         io.memRead  := false.B
         io.memWrite := false.B
@@ -46,7 +46,7 @@ class Control() extends Module {
         io.aluOp    := eBRANCH
         io.aluSrc1  := false.B
         io.aluSrc2  := false.B
-        io.pcSrc    := eIMMPC
+        io.pcSrc    := ePC_BRANCH
         io.regSrc   := DontCare
         io.memRead  := false.B
         io.memWrite := false.B
@@ -56,7 +56,7 @@ class Control() extends Module {
         io.aluOp    := eLoadStoreJump
         io.aluSrc1  := false.B
         io.aluSrc2  := true.B
-        io.pcSrc    := eNEXTPC
+        io.pcSrc    := ePC_4
         io.regSrc   := eMEM
         io.memRead  := ~io.opcode(5)
         io.memWrite := io.opcode(5)
@@ -66,7 +66,7 @@ class Control() extends Module {
         io.aluOp    := Mux(io.opcode(5), eLUIOP, eAUIPCOP)
         io.aluSrc1  := true.B
         io.aluSrc2  := true.B
-        io.pcSrc    := eNEXTPC
+        io.pcSrc    := ePC_4
         io.regSrc   := eALU
         io.memRead  := false.B
         io.memWrite := false.B
@@ -76,7 +76,7 @@ class Control() extends Module {
         io.aluOp    := eLoadStoreJump
         io.aluSrc1  := false.B
         io.aluSrc2  := true.B
-        io.pcSrc    := Mux(io.opcode(3), eIMMPC, eREGPC)
+        io.pcSrc    := Mux(io.opcode(3), ePC_JUMP, ePC_JALR)
         io.regSrc   := eJUMP
         io.memRead  := false.B
         io.memWrite := false.B

@@ -8,3 +8,4 @@ Hardware/.vscode
 Hardware/test_run_dir/
 Test-Programs/*.bin
 BasysTest/
+Hardware/Blink/

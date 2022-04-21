@@ -11,9 +11,12 @@ object eAluControl extends ChiselEnum {
 }
 
 object eRegSrc extends ChiselEnum {
-  val eALU, eMEM, eJUMP = Value
+val eALU, eMEM, eJUMP = Value
 }
 
 object ePCSrc extends ChiselEnum {
-    val eNEXTPC, eIMMPC, eREGPC = Value
+    val ePC_4, ePC_JUMP, ePC_BRANCH, ePC_JALR = Value
 }
+
+
+

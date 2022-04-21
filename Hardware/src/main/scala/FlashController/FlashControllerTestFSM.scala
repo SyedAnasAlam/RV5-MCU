@@ -2,6 +2,7 @@ package MemoryController
 
 import chisel3._
 import chisel3.util._
+import SPI._
 
 class FlashControllerTestFSM(count: Int) extends Module {
     require(count > 0, "count must be greater than 0")
@@ -9,20 +10,12 @@ class FlashControllerTestFSM(count: Int) extends Module {
     val io = IO(new Bundle {
         val readData = Output(UInt(16.W))
         val step = Input(Bool())
-
-        val cs = Output(Bool())
-        val mosi = Output(Bool())
-        val miso = Input(Bool())
-        val sck = Output(Bool())
-
+        val spi = new SPIMainPort()
         val debug_dataValid = Output(Bool())
     })
 
     val FlashController = Module(new FlashController(count))
-    io.cs := FlashController.io.cs
-    io.mosi := FlashController.io.mosi
-    FlashController.io.miso := io.miso
-    io.sck := FlashController.io.sck
+    io.spi <> FlashController.io.spi
 
     FlashController.io.readEnable := false.B
     FlashController.io.branch := false.B

@@ -3,6 +3,7 @@ package MemoryController
 import chisel3._
 import chisel3.util._
 import MemoryController.FlashCommands._
+import SPI._
 
 /**
  * SCK is high when idle
@@ -25,11 +26,8 @@ class FlashController(count: Int) extends Module {
         val address = Input(UInt(24.W))
         val dataValid = Output(Bool())
         val readData = Output(UInt(32.W))
-
-        val cs = Output(Bool())
-        val mosi = Output(Bool())
-        val miso = Input(Bool())
-        val sck = Output(Bool())
+        
+        val spi = new SPIMainPort()
     })
 
     val index = RegInit(0.U(32.W))
@@ -38,14 +36,14 @@ class FlashController(count: Int) extends Module {
     val mosi = RegInit(false.B)
     val cs = RegInit(true.B)
     val dataBuffer = RegInit(0.U(32.W))
-    val dataValid = RegInit(false.B)
+    val dataValid = WireDefault(false.B)
     
     val powerUp :: idle :: transmitCMD :: transmitAddress :: receiveData :: Nil = Enum(5)
     val state = RegInit(powerUp)
 
-    io.cs := cs
-    io.mosi := mosi
-    io.sck := sck   
+    io.spi.cs := cs
+    io.spi.mosi := mosi
+    io.spi.sck := sck   
     io.readData := dataBuffer 
     io.dataValid := dataValid
 
@@ -93,9 +91,9 @@ class FlashController(count: Int) extends Module {
         is(receiveData) {
             when(~sck && counter === max) {
                 index := index + 1.U
-                dataBuffer := Cat(dataBuffer, io.miso.asUInt)    
+                dataBuffer := Cat(dataBuffer, io.spi.miso.asUInt)    
 
-                when(index === 31.U) {
+                when(index === 32.U) {
                     dataValid:= true.B
                     when(io.branch) {
                         index := 0.U
