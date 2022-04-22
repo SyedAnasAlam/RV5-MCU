@@ -33,12 +33,13 @@ class DataMemory extends Module {
 
     io.readData := 0.S
 
-    val addr1 = io.address >> 2.U
+    val addr1 = io.address(31, 2)
     val addr2 = addr1 + 1.U
+    val byteSel = io.address(1, 0)
+
     when(io.readEnable) {
         readData := mem.read(addr1)
         readData2 := mem.read(addr2)
-        val byteSel = io.address(1, 0)
         switch(byteSel) {
           is(0.U) {
               readWord := readData
@@ -57,9 +58,9 @@ class DataMemory extends Module {
           }
           is(3.U) {
             readWord(0) := readData(3)
-            readWord(1) := readData2(1)
-            readWord(2) := readData2(2)
-            readWord(3) := readData2(3)
+            readWord(1) := readData2(0)
+            readWord(2) := readData2(1)
+            readWord(3) := readData2(2)
           }
         }
         switch(io.funct3) {
@@ -94,7 +95,50 @@ class DataMemory extends Module {
     }
 
     when(io.writeEnable) {
-        mem.write(addr1, element, mask.asBools)
+        val writeData = Wire(Vec(4, SInt(8.W)))
+        writeData(0) := 0.S
+        writeData(1) := 0.S
+        writeData(2) := 0.S
+        writeData(3) := 0.S
+        switch(byteSel) {
+            is(0.U) {
+                writeData := element
+                mem.write(addr1, writeData, mask.asBools)
+            }
+            is(1.U) {
+                writeData(0) := element(3)
+                writeData(1) := element(0)
+                writeData(2) := element(1)
+                writeData(3) := element(2)
+
+                mem.write(addr1, writeData, ("0010".U & mask).asBools)
+                mem.write(addr1, writeData, ("0100".U & mask).asBools)
+                mem.write(addr1, writeData, ("1000".U & mask).asBools)
+                mem.write(addr2, writeData, ("0001".U & mask).asBools)               
+            }
+            is(2.U) {
+                writeData(0) := element(2)
+                writeData(1) := element(3)
+                writeData(2) := element(0)
+                writeData(3) := element(1)
+                
+                mem.write(addr1, writeData, ("0100".U & mask).asBools)
+                mem.write(addr1, writeData, ("1000".U & mask).asBools)
+                mem.write(addr2, writeData, ("0001".U & mask).asBools)
+                mem.write(addr2, writeData, ("0010".U & mask).asBools)                     
+            }
+            is(3.U) {
+                writeData(0) := element(1)
+                writeData(1) := element(2)
+                writeData(2) := element(3)
+                writeData(3) := element(0)
+
+                mem.write(addr1, writeData, ("1000".U & mask).asBools)
+                mem.write(addr2, writeData, ("0001".U & mask).asBools)
+                mem.write(addr2, writeData, ("0010".U & mask).asBools)
+                mem.write(addr2, writeData, ("0100".U & mask).asBools)                     
+            }
+        }
     }
 }
 
@@ -102,5 +146,4 @@ class DataMemory extends Module {
 object DataMemory extends App {
     emitVerilog(new DataMemory(), Array("--target-dir", "Generated"))
 }
-
 

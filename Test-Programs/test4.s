@@ -3,7 +3,7 @@ lui x2, 0xA55
 srli x2, x2, 12
 or x3, x1, x2
 
-addi x4, x0, 1000
+addi x4, x0, 10
 
 sw x3, 0(x4)
 
