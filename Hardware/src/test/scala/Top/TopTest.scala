@@ -7,9 +7,9 @@ import java.nio.file.{Files, Paths}
     "Processor test" should "pass" in {
         val ProgramFolder = "../Test-Programs/"
         val OutputFolder = "../Test-Programs/Result/"
-        val program = "test4.bin"
+        val program = "loop.bin"
         test(new TopSim(ProgramFolder + program)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-            dut.clock.setTimeout(0)
+            dut.clock.setTimeout(200000)
             var i, j = 0
             
             //For ecall

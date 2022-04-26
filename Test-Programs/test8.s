@@ -1,9 +1,9 @@
-
-	li sp, 0x2000
+    li sp, 0x1000
 	jal main
 	mv a1, a0
 	li a0, 10
 	ecall
+
 sum:
 	addi	sp,sp,-48
 	sw	s0,44(sp)
@@ -100,4 +100,3 @@ main:
 	lw	s1,36(sp)
 	addi	sp,sp,48
 	jr	ra
-

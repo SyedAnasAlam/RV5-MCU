@@ -14,5 +14,10 @@ sra x8, x6, x4
 sub x9, x1, x2
 xor x11, x1, x2
 
+addi x12, x0, 5
+addi x12, x12, 1
+addi x12, x12, 1
+addi x12, x12, 1
+
 addi a0, x0, 10
 ecall
