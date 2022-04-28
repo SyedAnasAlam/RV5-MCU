@@ -11,6 +11,7 @@ class RegisterFile extends Module {
     val regData1 = Output(SInt(32.W))
     val regData2 = Output(SInt(32.W))
     val registerFile = Output(Vec(32, SInt(32.W)))
+    val regOut = Output(UInt(8.W))
   })
 
   val regFile = Reg(Vec(32, SInt(32.W)))
@@ -24,6 +25,7 @@ class RegisterFile extends Module {
   regFile(0) := 0.S(32.W)
   
   io.registerFile := regFile
+  io.regOut := regFile(11.U)(7, 0)
 }
 
 
