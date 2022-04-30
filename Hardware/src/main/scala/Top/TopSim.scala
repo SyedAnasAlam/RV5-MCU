@@ -10,9 +10,9 @@ class TopSim(app: String) extends Module {
     val ECALL_ARG_REG = 11  // ecall argument in register a1 (x11)
     
     val io = IO(new Bundle {
-        val registerFile = Output(Vec(32, SInt(32.W)))
-        val systemCallId = Output(SInt(32.W))
-        val systemCallArgument = Output(SInt(32.W))
+        //val registerFile = Output(Vec(32, SInt(32.W)))
+        //val systemCallId = Output(SInt(32.W))
+        //val systemCallArgument = Output(SInt(32.W))
 
         val aluOp = Output(eAluOp())
         val aluSrc1 = Output(Bool())
@@ -168,7 +168,7 @@ class TopSim(app: String) extends Module {
     RegisterFile.io.writeData := writeData
 
     // IO
-    io.systemCallId := Mux(instruction(6, 0) === "b1110011".U, RegisterFile.io.registerFile(ECALL_ID_REG), 0.S)
-    io.systemCallArgument := RegisterFile.io.registerFile(ECALL_ARG_REG)
-    io.registerFile := RegisterFile.io.registerFile
+    //io.systemCallId := Mux(instruction(6, 0) === "b1110011".U, RegisterFile.io.registerFile(ECALL_ID_REG), 0.S)
+    //io.systemCallArgument := RegisterFile.io.registerFile(ECALL_ARG_REG)
+    //io.registerFile := RegisterFile.io.registerFile
 }

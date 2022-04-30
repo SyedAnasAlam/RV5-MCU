@@ -83,3 +83,7 @@ class Control() extends Module {
         io.regWrite := true.B
     }
 }
+
+object Control extends App {
+    emitVerilog(new Control(), Array("--target-dir", "Generated"))
+}

@@ -125,3 +125,4 @@ class FlashController(count: Int) extends Module {
 object FlashController extends App {
     emitVerilog(new FlashController(count = 8), Array("--target-dir", "Generated"))
 }
+

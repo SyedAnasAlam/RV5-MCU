@@ -32,4 +32,6 @@ class ImmGenerator extends Module {
 }
 
 
-
+object ImmGenerator extends App {
+    emitVerilog(new ImmGenerator(), Array("--target-dir", "Generated"))
+}

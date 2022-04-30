@@ -38,3 +38,6 @@ class ALU extends Module {
 
 }
 
+object ALU extends App {
+    emitVerilog(new ALU(), Array("--target-dir", "Generated"))
+}

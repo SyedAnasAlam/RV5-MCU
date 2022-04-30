@@ -55,3 +55,6 @@ class AluControl extends Module {
     }
 }
 
+object AluControl extends App {
+    emitVerilog(new AluControl(), Array("--target-dir", "Generated"))
+}
