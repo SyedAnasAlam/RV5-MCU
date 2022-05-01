@@ -5,20 +5,16 @@ import SPI._
 import ePCSrc._
 import eRegSrc._
 
-class TopSim(app: String) extends Module {
-    val ECALL_ID_REG = 10   // ecall id in register a0 (x10)
-    val ECALL_ARG_REG = 11  // ecall argument in register a1 (x11)
-    
+class Top() extends Module {    
     val io = IO(new Bundle {
-        val registerFile = Output(Vec(32, SInt(32.W)))
-        val systemCallId = Output(SInt(32.W))
-        val systemCallArgument = Output(SInt(32.W))
+        val spiExternal = new SPISecondaryPort()
+        val spi = new SPIMainPort()       
 
+        val done = Output(Bool())
     })
     
     val flashClockCount = 2
     val FlashController = Module(new FlashController(count = flashClockCount))
-    val Flash = Module(new FlashModel(count = flashClockCount, app))
     val RegisterFile = Module(new RegisterFile())
     val Control = Module(new Control())
     val ImmGenerator = Module(new ImmGenerator())
@@ -26,10 +22,14 @@ class TopSim(app: String) extends Module {
     val AluControl = Module(new AluControl())
     val DataMemory = Module(new DataMemory())
     
+    io.spiExternal.miso := io.spi.miso
+    io.spi <> FlashController.io.spi
+    when(~io.spiExternal.cs) {
+        io.spi <> io.spiExternal
+    }
+
     val pc = RegInit(0.U(32.W))
     val pcNew = RegInit(0.U(32.W))
-    
-    Flash.io.spi <> FlashController.io.spi
 
     FlashController.io.branch := false.B
     FlashController.io.readEnable := true.B
@@ -99,8 +99,8 @@ class TopSim(app: String) extends Module {
     ALU.io.aluControl := AluControl.io.aluControl
 
     DataMemory.io.address := ALU.io.result.asUInt
-    DataMemory.io.readEnable := RegNext(Control.io.memRead)
-    DataMemory.io.writeEnable := RegNext(Control.io.memWrite)
+    DataMemory.io.readEnable := Control.io.memRead
+    DataMemory.io.writeEnable := Control.io.memWrite
     DataMemory.io.writeData := RegisterFile.io.regData2
     DataMemory.io.funct3 := instruction(14, 12)
 
@@ -136,10 +136,19 @@ class TopSim(app: String) extends Module {
     }
     RegisterFile.io.writeData := writeData
 
+    val state2 = RegInit(0.U(1.W))
+    io.done := false.B
+    when(state2 === 0.U) {
+        io.done := false.B
+        when(instruction(6, 0) === "b1110011".U) {
+            state := 1.U
+        }
+    }
+    . elsewhen(state2 === 1.U) {
+        io.done := true.B
+    }
+}
 
-
-    // IO
-    io.systemCallId := Mux(instruction(6, 0) === "b1110011".U, RegisterFile.io.registerFile(ECALL_ID_REG), 0.S)
-    io.systemCallArgument := RegisterFile.io.registerFile(ECALL_ARG_REG)
-    io.registerFile := RegisterFile.io.registerFile
+object Main extends App {
+    emitVerilog(new Top(), Array("--target-dir", "Generated"))
 }

@@ -1,19 +1,8 @@
-	.file	"ctest1.c"
-	.option nopic
-	.attribute arch, "rv32i2p0"
-	.attribute unaligned_access, 0
-	.attribute stack_align, 16
-	.text
- #APP
 	li sp, 0x1000
 	jal main
 	mv a1, a0
 	li a0, 10
 	ecall
- #NO_APP
-	.align	2
-	.globl	sum
-	.type	sum, @function
 sum:
 	addi	sp,sp,-32
 	sw	s0,28(sp)
@@ -27,10 +16,6 @@ sum:
 	lw	s0,28(sp)
 	addi	sp,sp,32
 	jr	ra
-	.size	sum, .-sum
-	.align	2
-	.globl	main
-	.type	main, @function
 main:
 	addi	sp,sp,-32
 	sw	ra,28(sp)
@@ -91,5 +76,3 @@ main:
 	lw	s1,20(sp)
 	addi	sp,sp,32
 	jr	ra
-	.size	main, .-main
-	.ident	"GCC: () 11.1.0"

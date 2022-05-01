@@ -45,12 +45,18 @@ test9:
 	riscv64-unknown-elf-objcopy -O binary test9.o test9.bin
 	rm test9.o
 
+test10:
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -c test10.s -o test10.o
+	riscv64-unknown-elf-objcopy -O binary test10.o test10.bin
+	rm test10.o
+
 ctest1:
-	riscv64-linux-gnu-gcc -nostartfiles -nostdlib -march=rv32i -mabi=ilp32 -T ~/linker.ld ctest1.c -o ctest1.out
-	riscv64-linux-gnu-objcopy -O binary ctest1.out ctest1.bin
+	riscv64-unknown-elf-gcc -nostartfiles -nostdlib -march=rv32i -mabi=ilp32 -T ~/linker.ld ctest1.c -o ctest1.out
+	riscv64-unknown-elf-objcopy -O binary ctest1.out ctest1.bin
 	rm ctest1.out
 
 loop:
-	riscv64-linux-gnu-gcc -nostartfiles -nostdlib -march=rv32i -mabi=ilp32 -T ~/linker.ld loop.c -o loop.out
-	riscv64-linux-gnu-objcopy -O binary loop.out loop.bin
+	riscv64-unknown-elf-gcc -nostartfiles -nostdlib -march=rv32i -mabi=ilp32 -T ~/linker.ld loop.c -o loop.out
+	riscv64-unknown-elf-gcc -nostartfiles -nostdlib -march=rv32i -mabi=ilp32 -S loop.c -o loop.s
+	riscv64-unknown-elf-objcopy -O binary loop.out loop.bin
 	rm loop.out

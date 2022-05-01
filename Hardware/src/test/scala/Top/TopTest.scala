@@ -9,7 +9,7 @@ import java.nio.file.{Files, Paths}
         val OutputFolder = "../Test-Programs/Result/"
         val program = "loop.bin"
         test(new TopSim(ProgramFolder + program)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-            dut.clock.setTimeout(200000)
+            dut.clock.setTimeout(0)
             var i, j = 0
             
             //For ecall
@@ -51,3 +51,4 @@ import java.nio.file.{Files, Paths}
     }
 }
 
+ 

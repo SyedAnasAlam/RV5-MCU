@@ -1,5 +1,5 @@
 // This is our minimal startup code (usually in _start)
-asm("li sp, 0x1000"); 	// SP set to 4kB
+asm("li sp, 0x2000"); 	// SP set to 4kB
 asm("jal main");        // call main
 asm("mv a1, a0");       // save return value in a1
 asm("li a0, 10");       // prepare ecall exit
@@ -14,7 +14,7 @@ void main(void)
 {
 	int len = 2;
 	int arr[len];
-    arr[0] = 1;
-    arr[1] = 2;
+    arr[0] = 47;
+    arr[1] = 90;
 	int _sum = sum(arr[0], arr[1]);
 }

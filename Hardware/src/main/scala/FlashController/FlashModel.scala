@@ -12,16 +12,16 @@ class FlashModel(count: Int, app: String) extends Module {
     })
     
     val program = Files.readAllBytes(Paths.get(app))  
-    val memory = Wire(Vec(program.length, SInt(8.W)))  
+    val memory = Wire(Vec(program.length-26, SInt(8.W)))  
     var i, wordCount, byteCount = 0;
-    for(i <- 0 until program.length) {
+    for(i <- 0 until program.length-26) {
         if(i % 4 == 0) {
             wordCount += 1
             byteCount = 0
         }
         memory(i.U) := program(wordCount*4 - byteCount - 1).asSInt        
         byteCount += 1
-    }
+    } 
     //val memory = VecInit(program.map(_.S(8.W)))
 
 

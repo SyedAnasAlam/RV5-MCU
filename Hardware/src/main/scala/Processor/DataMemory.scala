@@ -1,27 +1,6 @@
 import chisel3._
 import chisel3.util._
 
-class BRAM extends Module {
-    val io = IO(new Bundle {
-        val address = Input(UInt(11.W))
-        val readEnable = Input(Bool())
-        val writeEnable = Input(Bool())
-        val writeData = Input(SInt(8.W))
-        val readData = Output(SInt(8.W))
-    })
-    
-    val BRAM = SyncReadMem(512*4, SInt(8.W))
-
-    io.readData := 0.S
-    when(io.readEnable) {
-        io.readData := BRAM(io.address)
-    }
-
-    when(io.writeEnable) {
-        BRAM.write(io.address, io.writeData)
-    }
-}
-
 class DataMemory extends Module {
     val io = IO(new Bundle {
         val address = Input(UInt(13.W))
@@ -32,10 +11,10 @@ class DataMemory extends Module {
         val readData = Output(SInt(32.W))
     })
 
-    val mem0 = Module(new BRAM())
-    val mem1 = Module(new BRAM())
-    val mem2 = Module(new BRAM())
-    val mem3 = Module(new BRAM())
+    val mem0 = Module(new BRAM(512*4, 8))
+    val mem1 = Module(new BRAM(512*4, 8))
+    val mem2 = Module(new BRAM(512*4, 8))
+    val mem3 = Module(new BRAM(512*4, 8))
     val memory = VecInit(mem0.io, mem1.io, mem2.io, mem3.io)
 
     var i, j = 0

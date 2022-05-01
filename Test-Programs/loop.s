@@ -1,9 +1,19 @@
-
+	.file	"loop.c"
+	.option nopic
+	.attribute arch, "rv32i2p0"
+	.attribute unaligned_access, 0
+	.attribute stack_align, 16
+	.text
+ #APP
 	li sp, 0x2000
 	jal main
 	mv a1, a0
 	li a0, 10
 	ecall
+ #NO_APP
+	.align	2
+	.globl	sum
+	.type	sum, @function
 sum:
 	addi	sp,sp,-48
 	sw	s0,44(sp)
@@ -34,6 +44,10 @@ sum:
 	lw	s0,44(sp)
 	addi	sp,sp,48
 	jr	ra
+	.size	sum, .-sum
+	.align	2
+	.globl	main
+	.type	main, @function
 main:
 	addi	sp,sp,-48
 	sw	ra,44(sp)
@@ -42,7 +56,7 @@ main:
 	addi	s0,sp,48
 	mv	t1,sp
 	mv	s1,t1
-	li	t1,10
+	li	t1,7
 	sw	t1,-24(s0)
 	lw	t1,-24(s0)
 	addi	t3,t1,-1
@@ -88,8 +102,9 @@ main:
 	lw	a4,-20(s0)
 	lw	a5,-24(s0)
 	blt	a4,a5,.L7
+	lw	a5,-32(s0)
 	lw	a1,-24(s0)
-	lw	a0,-32(s0)
+	mv	a0,a5
 	call	sum
 	sw	a0,-36(s0)
 	mv	sp,s1
@@ -100,4 +115,5 @@ main:
 	lw	s1,36(sp)
 	addi	sp,sp,48
 	jr	ra
-
+	.size	main, .-main
+	.ident	"GCC: () 9.3.0"

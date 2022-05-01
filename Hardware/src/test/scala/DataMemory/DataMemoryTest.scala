@@ -16,7 +16,7 @@ class DataMemoryTest extends AnyFlatSpec with ChiselScalatestTester {
           dut.io.address.poke(0.U)
           dut.io.writeData.poke(0.S)
           dut.io.funct3.poke(0.U)
-          dut.clock.step(9)
+          dut.clock.step()
 
           read(10, 4);
           read(11, 4);
