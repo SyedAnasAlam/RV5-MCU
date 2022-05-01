@@ -50,7 +50,26 @@ class RegisterFile extends Module {
   regFile2.io.writeEnable := false.B
   regFile2.io.writeData := io.writeData
 
-  when(io.writeEnable) {
+  val writeEnable = RegInit(false.B)
+  val a :: b :: Nil = Enum(2)
+  val risingEdgeFsm = RegInit(a)
+  switch(risingEdgeFsm) {
+    is(a) {
+      writeEnable := false.B
+      when(!RegNext(io.writeEnable)) {
+        risingEdgeFsm := b
+      }
+    }
+    is(b) {
+      when(RegNext(io.writeEnable)) {
+          risingEdgeFsm := a
+          writeEnable := true.B
+      }
+    }
+  }
+  
+
+  when(writeEnable) {
       regFile1.io.writeEnable := true.B     
       regFile2.io.writeEnable := true.B
   }  
@@ -67,7 +86,7 @@ class RegisterFile extends Module {
   
   // SIMULATION
    val regFile = Reg(Vec(32, SInt(32.W)))
-  when(io.writeEnable) {
+  when(writeEnable) {
       regFile(io.regWrite) := io.writeData
   }  
   regFile(0) := 0.S(32.W)

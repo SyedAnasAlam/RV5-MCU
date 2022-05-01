@@ -1,4 +1,5 @@
-	li sp, 0x1000
+	lui x2, 1
+	addi x2, x2, 0
 	jal main
 	mv a1, a0
 	li a0, 10
@@ -66,7 +67,8 @@ main:
 	lw	a5,4(a5)
 	mv	a1,a5
 	mv	a0,a4
-	call	sum
+	auipc x6, 0
+	jalr, x1, x6, -244(x0)
 	sw	a0,-32(s0)
 	mv	sp,s1
 	nop

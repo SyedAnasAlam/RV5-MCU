@@ -4,7 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import java.nio.file.{Files, Paths}
 
  class TopTest extends AnyFlatSpec with ChiselScalatestTester {
-    "Processor test" should "pass" in {
+    "Processor3 test" should "pass" in {
         val ProgramFolder = "../Test-Programs/"
         val OutputFolder = "../Test-Programs/Result/"
         val program = "loop.bin"

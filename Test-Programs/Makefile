@@ -60,3 +60,4 @@ loop:
 	riscv64-unknown-elf-gcc -nostartfiles -nostdlib -march=rv32i -mabi=ilp32 -S loop.c -o loop.s
 	riscv64-unknown-elf-objcopy -O binary loop.out loop.bin
 	rm loop.out
+

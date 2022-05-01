@@ -29,63 +29,53 @@ class TopSim(app: String) extends Module {
     val pc = RegInit(0.U(32.W))
     val pcNew = RegInit(0.U(32.W))
     
-    Flash.io.spi <> FlashController.io.spi
-
-    FlashController.io.branch := false.B
-    FlashController.io.readEnable := true.B
-    FlashController.io.address := pcNew(23, 0)
-
-    //val instruction = WireDefault(0.U(32.W))
-    val counter = RegInit(0.U(12.W))
-    val counter2 = RegInit(0.U(32.W))
-    counter2 := counter2 + 1.U
     val instruction = RegInit(0.U(32.W))
     val regSource1 = instruction(19, 15)
     val regSource2 = instruction(24, 20)
     val regDest = instruction(11, 7) 
-    when(Control.io.regWrite) {
-        counter := counter + 1.U
-    }
+    val updatePC = WireDefault(false.B)
+
+    Flash.io.spi <> FlashController.io.spi
+    FlashController.io.branch := false.B
+    FlashController.io.readEnable := true.B
+    FlashController.io.address := 0.U
 
 
-    val state = RegInit(0.U(2.W))
-    switch(state) {
-        is(0.U) {
+    val startup :: fetch :: hold :: Nil = Enum(3)
+    val fetchFsm = RegInit(startup)
+    switch(fetchFsm) {
+        is(startup) {
             FlashController.io.address := 0.U
             when(FlashController.io.dataValid) {
                 instruction := FlashController.io.readData
-                counter := false.B
-                state := 1.U
-                counter2 := 0.U
+                fetchFsm := hold
+            }          
+        }
+        is(fetch) {
+            instruction := 0.U
+            FlashController.io.address := pcNew(23, 0)
+            when(FlashController.io.dataValid) {
+                instruction := FlashController.io.readData
+                pc := pcNew
+                fetchFsm := hold
+            }     
+        }
+        is(hold) {
+            val counter = RegInit(0.U(2.W))
+            counter := counter + 1.U
+            when(counter === 2.U) {
+                updatePC := true.B
+                fetchFsm := fetch
             }
         }
-        is(1.U) {
-            FlashController.io.address := pcNew(23, 0)
-             when(FlashController.io.dataValid) {
-                instruction := FlashController.io.readData
-                counter := false.B
-                counter2 := 0.U
-                state := 1.U
-                pc := pcNew
-            }         
-        }
     }
-
-/*     when(FlashController.io.dataValid) {
-        instruction := FlashController.io.readData
-        counter := 0.U
-    }
-    when(RegNext(RegNext(FlashController.io.dataValid))) {
-        pc := pcNew
-    } */
 
     Control.io.opcode := instruction(6, 0)
-    val regWrite = Mux(counter > 0.U, false.B, Control.io.regWrite)
 
     RegisterFile.io.regSource1 := regSource1
     RegisterFile.io.regSource2 := regSource2
     RegisterFile.io.regWrite := regDest
-    RegisterFile.io.writeEnable := RegNext(RegNext(regWrite))
+    RegisterFile.io.writeEnable := Control.io.regWrite
 
     ImmGenerator.io.instruction := instruction
 
@@ -99,13 +89,13 @@ class TopSim(app: String) extends Module {
     ALU.io.aluControl := AluControl.io.aluControl
 
     DataMemory.io.address := ALU.io.result.asUInt
-    DataMemory.io.readEnable := RegNext(Control.io.memRead)
-    DataMemory.io.writeEnable := RegNext(Control.io.memWrite)
+    DataMemory.io.readEnable := Control.io.memRead
+    DataMemory.io.writeEnable := Control.io.memWrite
     DataMemory.io.writeData := RegisterFile.io.regData2
     DataMemory.io.funct3 := instruction(14, 12)
 
     // TODO Clean this
-    when(counter2 === 1.U) {
+    when(updatePC) {
         switch(Control.io.pcSrc) {
             is(ePC_4) { 
                 pcNew := pc + 4.U 
@@ -126,6 +116,7 @@ class TopSim(app: String) extends Module {
             }
         }
     }
+    
     
     
     val writeData = WireDefault(0.S(32.W))

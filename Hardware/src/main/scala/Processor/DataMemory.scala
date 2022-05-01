@@ -39,7 +39,58 @@ class DataMemory extends Module {
     val readData = WireDefault(0.S(32.W))
     io.readData := readData
 
-    when(io.writeEnable) {
+    val writeEnable = RegInit(false.B)
+    val readEnable = RegInit(false.B)
+
+    val a :: b :: hold :: Nil = Enum(3)
+    val risingEdgeFsm = RegInit(a)
+    val risingEdgeFsm2 = RegInit(a)
+    switch(risingEdgeFsm) {
+        is(a) {
+            writeEnable := false.B
+            when(!io.writeEnable) {
+                risingEdgeFsm := b
+            }
+        }
+        is(b) {
+            when(io.writeEnable) {
+                risingEdgeFsm := hold
+                writeEnable := true.B
+            }
+        }
+        is(hold) {
+            val counter = RegInit(0.U(2.W))
+            counter := counter + 1.U
+            when(counter === 1.U) {
+                //risingEdgeFsm := a
+            }
+            risingEdgeFsm := RegNext(a)
+        }
+    }
+    switch(risingEdgeFsm2) {
+        is(a) {
+            readEnable := false.B
+            when(!io.readEnable) {
+                risingEdgeFsm2 := b
+            }
+        }
+        is(b) {
+            when(io.readEnable) {
+                risingEdgeFsm2 := hold
+                readEnable := true.B
+            }
+        }
+        is(hold) {
+            val counter = RegInit(0.U(2.W))
+            counter := counter + 1.U
+            when(counter === 1.U) {
+                //risingEdgeFsm2 := a
+            }
+            risingEdgeFsm2 := RegNext(a)
+        }
+    }
+
+    when(writeEnable) {
         switch(io.funct3) {
             is(0.U) {
                 write(byteSelect, address, writeData(0))
@@ -58,7 +109,7 @@ class DataMemory extends Module {
     }
 
     
-    when(io.readEnable) {
+    when(readEnable) {
         switch(io.funct3) {
             is(0.U) {
                 readData := read(byteSelect, address)

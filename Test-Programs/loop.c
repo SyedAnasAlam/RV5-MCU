@@ -15,7 +15,7 @@ int sum(int arr[], int len)
 
 void main(void) 
 {
-	int len = 7;
+	int len = 10;
 	int arr[len];
 	for(int i = 0; i < len; i++)
 		arr[i] = i;

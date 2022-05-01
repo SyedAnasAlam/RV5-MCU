@@ -56,7 +56,7 @@ main:
 	addi	s0,sp,48
 	mv	t1,sp
 	mv	s1,t1
-	li	t1,7
+	li	t1,10
 	sw	t1,-24(s0)
 	lw	t1,-24(s0)
 	addi	t3,t1,-1
