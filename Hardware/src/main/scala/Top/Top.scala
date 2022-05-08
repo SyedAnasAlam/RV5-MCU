@@ -31,7 +31,7 @@ class Top(_app: String) extends Module {
     val regDest = instruction(11, 7) 
     val updatePC = WireDefault(false.B)
     
-    val startup :: fetch :: hold :: Nil = Enum(3)
+    val startup :: fetch :: hold :: exit :: Nil = Enum(4)
     val fetchFsm = RegInit(startup)
     switch(fetchFsm) {
         is(startup) { 
@@ -55,6 +55,12 @@ class Top(_app: String) extends Module {
                 updatePC := true.B
                 fetchFsm := fetch
             }
+            when(instruction(6, 0) === "b1110011".U) {
+                fetchFsm := exit
+            }
+        }
+        is(exit) {
+            instruction := 0x00000013.U
         }
     }
 
