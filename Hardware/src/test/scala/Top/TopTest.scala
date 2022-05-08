@@ -2,13 +2,12 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import java.nio.file.{Files, Paths}
+import utility.Constants._
 
  class TopTest extends AnyFlatSpec with ChiselScalatestTester {
     "Processor3 test" should "pass" in {
-        val ProgramFolder = "../Test-Programs/"
-        val OutputFolder = "../Test-Programs/Result/"
         val program = "loop.bin"
-        test(new TopSim(ProgramFolder + program)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new TopSim(PROGRAM_FOLDER + program)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
             dut.clock.setTimeout(0)
             var i, j = 0
             
@@ -43,7 +42,7 @@ import java.nio.file.{Files, Paths}
             }
 
             // Binary dump of register file
-            Files.write(Paths.get(OutputFolder + program), rfBytes)
+            Files.write(Paths.get(OUTPUT_FOLDER + program), rfBytes) 
         }
     }
 }

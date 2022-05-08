@@ -1,7 +1,8 @@
 jal x1, main
 
 func:
-    addi x2, x0, 5
+    add x11, x9, x0
+    addi x11, x0, 3
     jr	x1
 
 main:

@@ -1,22 +1,21 @@
 import chisel3._
 import chisel3.util._
+import java.nio.file.{Files, Paths}
 import memoryController.{FlashController, FlashModel}
 import utility.Constants._
 import spi._
 import ePCSrc._
 import eRegSrc._
 
-class TopSim(_app: String) extends Module {    
+class Top(_app: String) extends Module {   
     val io = IO(new Bundle {
-        val registerFile = Output(Vec(32, SInt(32.W)))
-        val systemCallId = Output(SInt(32.W))
-        val systemCallArgument = Output(SInt(32.W))
+        val regOut = Output(UInt(16.W))
     })
-    
-    val flashClockCount = 2
-    val FlashController = Module(new FlashController(_count = flashClockCount))
-    val Flash = Module(new FlashModel(_count = flashClockCount, _app))
-    val RegisterFile = Module(new RegisterFileSim())
+
+    val program = Files.readAllBytes(Paths.get(PROGRAM_FOLDER + _app))    
+    val imem = VecInit(program.map(_.S(8.W)))
+
+    val RegisterFile = Module(new RegisterFile())
     val Control = Module(new Control())
     val ImmGenerator = Module(new ImmGenerator())
     val ALU = Module(new ALU())
@@ -25,36 +24,29 @@ class TopSim(_app: String) extends Module {
     
     val pc = RegInit(0.U(32.W))
     val pcNew = RegInit(0.U(32.W))
-    
+
     val instruction = RegInit(0.U(32.W))
     val regSource1 = instruction(19, 15)
     val regSource2 = instruction(24, 20)
     val regDest = instruction(11, 7) 
     val updatePC = WireDefault(false.B)
-
-    Flash.io.spi <> FlashController.io.spi
-    FlashController.io.readEnable := true.B
-    FlashController.io.address := 0.U
-
-
+    
     val startup :: fetch :: hold :: Nil = Enum(3)
     val fetchFsm = RegInit(startup)
     switch(fetchFsm) {
-        is(startup) {
-            FlashController.io.address := 0.U
-            when(FlashController.io.dataValid) {
-                instruction := FlashController.io.readData
-                fetchFsm := hold
-            }          
+        is(startup) { 
+            instruction := ((imem(3.U) ## imem(2.U)) ## (imem(1.U) ## imem(0.U)))
+            fetchFsm := hold
         }
         is(fetch) {
             instruction := 0.U
-            FlashController.io.address := pcNew(23, 0)
-            when(FlashController.io.dataValid) {
-                instruction := FlashController.io.readData
-                pc := pcNew
+            val counter = RegInit(0.U(6.W))
+            counter := counter + 1.U
+            pc := pcNew
+            when(counter === 2.U) {
+                instruction := ((imem(pc + 3.U) ## imem(pc + 2.U)) ## (imem(pc + 1.U) ## imem(pc)))
                 fetchFsm := hold
-            }     
+            } 
         }
         is(hold) {
             val counter = RegInit(0.U(2.W))
@@ -111,9 +103,7 @@ class TopSim(_app: String) extends Module {
             }
         }
     }
-    
-    
-    
+      
     val writeData = WireDefault(0.S(32.W))
     switch(Control.io.regSrc) {
         is(eALU)   { writeData := ALU.io.result          }
@@ -122,9 +112,9 @@ class TopSim(_app: String) extends Module {
     }
     RegisterFile.io.writeData := writeData
 
+    io.regOut := RegisterFile.io.regOut
+}  
 
-    // IO
-    io.systemCallId := Mux(instruction(6, 0) === "b1110011".U, RegisterFile.io.registerFile(ECALL_ID_REG), 0.S)
-    io.systemCallArgument := RegisterFile.io.registerFile(ECALL_ARG_REG)
-    io.registerFile := RegisterFile.io.registerFile
-} 
+object Top extends App {
+    emitVerilog(new Top(_app = "loop.bin"), Array("--target-dir", "Generated"))
+}
