@@ -1,17 +1,23 @@
-package MemoryController
+package memoryController
 
 import chisel3._
 import chisel3.util._
 import java.nio.file.{Files, Paths}
-import MemoryController.FlashCommands._
-import SPI._
+import memoryController.FlashCommands._
+import spi._
 
-class FlashModel(count: Int, app: String) extends Module {
+/**
+ * A hardware model af a SPI Flash
+ * @param _count is number of system clock cycles per SPI clock cycles 
+ * @param _app is path to a binary file and corresponds to the content of the flash
+*/
+
+class FlashModel(_count: Int, _app: String) extends Module {
     val io = IO(new Bundle {
         val spi = new SPISecondaryPort()
     })
     
-    val program = Files.readAllBytes(Paths.get(app))  
+    val program = Files.readAllBytes(Paths.get(_app))  
     val x = 26;
     val memory = Wire(Vec(program.length-x, SInt(8.W)))  
     var i, wordCount, byteCount = 0;
@@ -23,11 +29,9 @@ class FlashModel(count: Int, app: String) extends Module {
         memory(i.U) := program(wordCount*4 - byteCount - 1).asSInt        
         byteCount += 1
     } 
-    //val memory = VecInit(program.map(_.S(8.W)))
 
-
-    val counter = RegInit(0.U(log2Ceil(count + 1).W))
-    val max = (count - 1).U
+    val counter = RegInit(0.U(log2Ceil(_count + 1).W))
+    val max = (_count - 1).U
     counter := counter + 1.U
     when(counter === max) {
         counter := 0.U

@@ -1,6 +1,14 @@
-package SPI
+package spi
 
 import chisel3._
+
+/**
+ * SPI signal bundles
+ * Following naming is used for SPI signals:
+ * MOSI: Main-Out-Secondary-In
+ * MISO: Main-In-Secondary-Out
+*/
+
 
 class SPIMainPort() extends Bundle() {
     val sck = Output(Bool())

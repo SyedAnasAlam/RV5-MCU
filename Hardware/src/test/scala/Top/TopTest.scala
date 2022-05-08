@@ -12,19 +12,16 @@ import java.nio.file.{Files, Paths}
             dut.clock.setTimeout(0)
             var i, j = 0
             
-            //For ecall
+            //Ecall
             var exit = false  
             var id, arg = 0   
-
             while(!exit) {
                 dut.clock.step(1)
                 id = dut.io.systemCallId.peek().litValue().toInt
                 arg = dut.io.systemCallArgument.peek().litValue().toInt
                 id match {
-                    // TODO Support print ecall
-                    case 1  => println("%d\n", arg)
+                    case 1  => println(arg)
                     case 10 => exit = true
-                    case 11 => println("%c\n", arg)
                     case _  =>  
                 }
             }

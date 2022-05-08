@@ -1,28 +1,28 @@
-package MemoryController
+package memoryController
 
 import chisel3._
 import chisel3.util._
-import MemoryController.FlashCommands._
-import SPI._
+import memoryController.FlashCommands._
+import spi._
 
 /**
+ * SPI Flash Controller 
+ * @param _count is number of system clock cycles per output SPI clock cycles
  * SCK is high when idle
- * Controller shifts out data on falling edge of SCK such that data is valid on rising edge of SCK
- * Controller samples data from flash on rising edge of SCK
+ * Data is shifted out on the falling edge of SCK such that it is valid on the rising edge of SCK
+ * The controller samples data from the flash on the rising edge of SCK
 */
-
 
 object FlashCommands {
     val READ_CMD = "h03".U(8.W)
     val RELEASE_POWER_DOWN_CMD = "hAB".U(8.W)
 }
 
-class FlashController(count: Int) extends Module {
-    require(count > 0, "count must be greater than 0")
+class FlashController(_count: Int) extends Module {
+    require(_count > 0, "count must be greater than 0")
 
     val io = IO(new Bundle {
         val readEnable = Input(Bool())
-        val branch = Input(Bool())
         val address = Input(UInt(24.W))
         val dataValid = Output(Bool())
         val readData = Output(UInt(32.W))
@@ -31,7 +31,7 @@ class FlashController(count: Int) extends Module {
     })
 
     val index = RegInit(0.U(32.W))
-    val counter = RegInit(0.U(log2Ceil(count + 1).W))
+    val counter = RegInit(0.U(log2Ceil(_count + 1).W))
     val sck = RegInit(true.B)
     val mosi = RegInit(false.B)
     val cs = RegInit(true.B)
@@ -47,7 +47,7 @@ class FlashController(count: Int) extends Module {
     io.readData := dataBuffer 
     io.dataValid := dataValid
 
-    val max = (count - 1).U
+    val max = (_count - 1).U
     counter := counter + 1.U
     when(counter === max) {
         counter := 0.U
@@ -95,12 +95,7 @@ class FlashController(count: Int) extends Module {
 
                 when(index === 32.U) {
                     dataValid:= true.B
-                    when(io.branch) {
-                        index := 0.U
-                    }
-                    . otherwise {
-                        state := idle
-                    }
+                    state := idle
                 }        
             }
         }
@@ -120,8 +115,4 @@ class FlashController(count: Int) extends Module {
         ret     
     }
 
-}
-
-object FlashController extends App {
-    emitVerilog(new FlashController(count = 8), Array("--target-dir", "Generated"))
 }

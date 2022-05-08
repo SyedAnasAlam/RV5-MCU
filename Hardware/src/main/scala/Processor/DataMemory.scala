@@ -1,5 +1,7 @@
 import chisel3._
 import chisel3.util._
+import utility.RisingEdgeFsm
+import utility.BRAM
 
 class DataMemory extends Module {
     val io = IO(new Bundle {
@@ -21,7 +23,8 @@ class DataMemory extends Module {
     for(i <- 0 until 4) {
         memory(i.U).writeEnable := false.B
         memory(i.U).readEnable := false.B
-        memory(i.U).address := 0.U
+        memory(i.U).readAddress := 0.U
+        memory(i.U).writeAddress := 0.U
         memory(i.U).writeData := 0.S
     }
 
@@ -29,6 +32,12 @@ class DataMemory extends Module {
     val nextAddress = address + 1.U
     val byteSelect = io.address(1,0)
 
+    val addr = VecInit(0.U, 0.U, 0.U, 0.U)
+    addr(0) := address
+    addr(1) := Mux(byteSelect === 3.U, nextAddress, address)
+    addr(2) := Mux(byteSelect(1), nextAddress, address)
+    addr(3) := Mux(byteSelect(1) || byteSelect(0), nextAddress, address)
+    
     val writeData = VecInit(
         io.writeData(7,0).asSInt,
         io.writeData(15,8).asSInt,
@@ -39,56 +48,13 @@ class DataMemory extends Module {
     val readData = WireDefault(0.S(32.W))
     io.readData := readData
 
-    val writeEnable = RegInit(false.B)
-    val readEnable = RegInit(false.B)
+    val RisingEdgeFsmW = Module(new RisingEdgeFsm(_hold = true, _delay = false))
+    RisingEdgeFsmW.io.in := io.writeEnable
+    val writeEnable = RisingEdgeFsmW.io.out 
 
-    val a :: b :: hold :: Nil = Enum(3)
-    val risingEdgeFsm = RegInit(a)
-    val risingEdgeFsm2 = RegInit(a)
-    switch(risingEdgeFsm) {
-        is(a) {
-            writeEnable := false.B
-            when(!io.writeEnable) {
-                risingEdgeFsm := b
-            }
-        }
-        is(b) {
-            when(io.writeEnable) {
-                risingEdgeFsm := hold
-                writeEnable := true.B
-            }
-        }
-        is(hold) {
-            val counter = RegInit(0.U(2.W))
-            counter := counter + 1.U
-            when(counter === 1.U) {
-                //risingEdgeFsm := a
-            }
-            risingEdgeFsm := RegNext(a)
-        }
-    }
-    switch(risingEdgeFsm2) {
-        is(a) {
-            readEnable := false.B
-            when(!io.readEnable) {
-                risingEdgeFsm2 := b
-            }
-        }
-        is(b) {
-            when(io.readEnable) {
-                risingEdgeFsm2 := hold
-                readEnable := true.B
-            }
-        }
-        is(hold) {
-            val counter = RegInit(0.U(2.W))
-            counter := counter + 1.U
-            when(counter === 1.U) {
-                //risingEdgeFsm2 := a
-            }
-            risingEdgeFsm2 := RegNext(a)
-        }
-    }
+    val RisingEdgeFsmR = Module(new RisingEdgeFsm(_hold = true, _delay = false))
+    RisingEdgeFsmR.io.in := io.readEnable
+    val readEnable = RisingEdgeFsmR.io.out  
 
     when(writeEnable) {
         switch(io.funct3) {
@@ -135,23 +101,18 @@ class DataMemory extends Module {
         }
     }
     
-    def write(column: UInt, address : UInt,  data: SInt) { 
-        memory(column(1,0)).writeEnable := true.B
-        memory(column(1,0)).address := address 
-        memory(column(1,0)).writeData := data 
+    def write(_column: UInt, _address : UInt,  _data: SInt) { 
+        memory(_column(1,0)).writeEnable := true.B
+        memory(_column(1,0)).writeAddress := _address 
+        memory(_column(1,0)).writeData := _data 
     }
 
-    def read(column: UInt, address : UInt): SInt = {
-        memory(column(1,0)).readEnable := true.B
-        memory(column(1,0)).address := address
+    def read(_column: UInt, _address : UInt): SInt = {
+        memory(_column(1,0)).readEnable := true.B
+        memory(_column(1,0)).readAddress := _address
 
-        memory(column(1,0)).readData
+        memory(_column(1,0)).readData
     }
 
-}
-
-
-object DataMemory extends App {
-    emitVerilog(new DataMemory(), Array("--target-dir", "Generated"))
 }
 

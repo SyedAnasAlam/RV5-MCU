@@ -1,11 +1,11 @@
 import chisel3._
 import chisel3.util._
-import MemoryController.{FlashController, FlashModel}
-import SPI._
+import memoryController.{FlashController, FlashModel}
+import spi._
 import ePCSrc._
 import eRegSrc._
 
-class TopSim(app: String) extends Module {
+class TopSim(_app: String) extends Module {
     val ECALL_ID_REG = 10   // ecall id in register a0 (x10)
     val ECALL_ARG_REG = 11  // ecall argument in register a1 (x11)
     
@@ -17,8 +17,8 @@ class TopSim(app: String) extends Module {
     })
     
     val flashClockCount = 2
-    val FlashController = Module(new FlashController(count = flashClockCount))
-    val Flash = Module(new FlashModel(count = flashClockCount, app))
+    val FlashController = Module(new FlashController(_count = flashClockCount))
+    val Flash = Module(new FlashModel(_count = flashClockCount, _app))
     val RegisterFile = Module(new RegisterFile())
     val Control = Module(new Control())
     val ImmGenerator = Module(new ImmGenerator())
@@ -36,7 +36,6 @@ class TopSim(app: String) extends Module {
     val updatePC = WireDefault(false.B)
 
     Flash.io.spi <> FlashController.io.spi
-    FlashController.io.branch := false.B
     FlashController.io.readEnable := true.B
     FlashController.io.address := 0.U
 
@@ -94,7 +93,6 @@ class TopSim(app: String) extends Module {
     DataMemory.io.writeData := RegisterFile.io.regData2
     DataMemory.io.funct3 := instruction(14, 12)
 
-    // TODO Clean this
     when(updatePC) {
         switch(Control.io.pcSrc) {
             is(ePC_4) { 
@@ -121,16 +119,15 @@ class TopSim(app: String) extends Module {
     
     val writeData = WireDefault(0.S(32.W))
     switch(Control.io.regSrc) {
-        is(eALU)   { writeData := ALU.io.result }
+        is(eALU)   { writeData := ALU.io.result          }
         is(eMEM)   { writeData := DataMemory.io.readData }
-        is(eJUMP)  { writeData := (pc + 4.U).asSInt } //TODO double check this
+        is(eJUMP)  { writeData := (pc + 4.U).asSInt      } 
     }
     RegisterFile.io.writeData := writeData
-
 
 
     // IO
     io.systemCallId := Mux(instruction(6, 0) === "b1110011".U, RegisterFile.io.registerFile(ECALL_ID_REG), 0.S)
     io.systemCallArgument := RegisterFile.io.registerFile(ECALL_ARG_REG)
     io.registerFile := RegisterFile.io.registerFile
-}
+} 
