@@ -5,15 +5,10 @@ import java.nio.file.{Files, Paths}
 import utility.Constants._
 
  class TopTest extends AnyFlatSpec with ChiselScalatestTester {
-    "Processor3 test" should "pass" in {
+    "Processor test" should "pass" in {
         val program = "loop.bin"
-        test(new Top(PROGRAM_FOLDER + program)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-            dut.clock.setTimeout(0)
-            var i = 0;
-            for(i <- 0 until 50000) {
-                dut.clock.step()
-            }
-            /* var i, j = 0
+        test(new TopSim(PROGRAM_FOLDER + program)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+            var i, j = 0
             
             //Ecall
             var exit = false  
@@ -46,7 +41,7 @@ import utility.Constants._
             }
 
             // Binary dump of register file
-            Files.write(Paths.get(OUTPUT_FOLDER + program), rfBytes)  */
+            Files.write(Paths.get(OUTPUT_FOLDER + program), rfBytes)  
         }
     }
 }
