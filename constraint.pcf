@@ -1,0 +1,20 @@
+set_io clock 52
+set_io reset 93
+
+
+set_io io_regOut[0] 7
+set_io io_regOut[1] 8
+set_io io_regOut[2] 9
+set_io io_regOut[3] 10
+set_io io_regOut[4] 11
+set_io io_regOut[5] 12
+set_io io_regOut[6] 15
+set_io io_regOut[7] 16
+set_io io_regOut[8] 17
+set_io io_regOut[9] 18
+set_io io_regOut[10] 19
+set_io io_regOut[11] 20
+set_io io_regOut[12] 21
+set_io io_regOut[13] 22
+set_io io_regOut[14] 23
+set_io io_regOut[15] 24
