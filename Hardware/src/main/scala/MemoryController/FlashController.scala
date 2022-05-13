@@ -114,5 +114,4 @@ class FlashController(_count: Int) extends Module {
         }
         ret     
     }
-
 }

@@ -7,7 +7,7 @@ import spi._
 import ePCSrc._
 import eRegSrc._
 
-class Top(_app: String) extends Module {   
+class TopTable(_app: String) extends Module {   
     val io = IO(new Bundle {
         val regOut = Output(UInt(16.W))
     })
@@ -60,7 +60,7 @@ class Top(_app: String) extends Module {
             }
         }
         is(exit) {
-            instruction := 0x00000013.U
+            instruction := 0x00000013.U // nop (addi x0, x0, 0)
         }
     }
 
@@ -121,6 +121,6 @@ class Top(_app: String) extends Module {
     io.regOut := RegisterFile.io.regOut
 }  
 
-object Top extends App {
-    emitVerilog(new Top(_app = "loop.bin"), Array("--target-dir", "Generated"))
+object TopTable extends App {
+    emitVerilog(new TopTable(_app = "loop.bin"), Array("--target-dir", "Generated"))
 }

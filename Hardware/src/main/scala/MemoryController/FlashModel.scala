@@ -18,7 +18,7 @@ class FlashModel(_count: Int, _app: String) extends Module {
     })
     
     val program = Files.readAllBytes(Paths.get(_app))  
-    val x = 26;
+    val x = 26; // Sometimes the binary contains unneccessary header information, this is set to not simulate these bytes 
     val memory = Wire(Vec(program.length-x, SInt(8.W)))  
     var i, wordCount, byteCount = 0;
     for(i <- 0 until program.length-x) {
