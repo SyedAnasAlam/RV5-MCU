@@ -1,2 +1,2 @@
 # RV5-MCU
-RISC-V microcontroller
+RISC-V microcontroller implementation in Chisel 
